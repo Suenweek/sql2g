@@ -1,83 +1,50 @@
-import json
+import yaml
 import click
 import psycopg2
 from statsd import StatsClient
 
 
-def get_config(path):
-    with open(path) as f:
-        return json.load(f)
-
-
-class DataBase(object):
-
-    def __init__(self, host, port, username, password, database):
-        self.conn = psycopg2.connect(
-            host=host,
-            port=port,
-            username=username,
-            password=password,
-            database=database
-        )
-
-    def __del__(self):
-        self.conn.close()
-
-    def aggregate(self, query):
-        with self.conn as conn, conn.cursor() as cur:
-            cur.execute(query)
-            rows = cur.fetchmany()
-            if len(rows) == 1:
-                cols = rows[0]
-                if len(cols) == 1:
-                    return cols[0]
-                else:
-                    raise ValueError("Query must return exactly one column.")
-            else:
-                raise ValueError("Query must return exactly one row.")
-
-
 @click.command()
 @click.option(
-    "-d", "--db-config-path",
-    type=click.Path(),
-    required=True
-)
-@click.option(
-    "-s", "--stats-config-path",
-    type=click.Path()
-)
-@click.option(
-    "-q", "--query",
+    "--config-file",
     type=click.File(),
-    required=True
+    default="config.yaml",
+    show_default=True
 )
-@click.option(
-    "-n", "--metric-name",
-    required=True
-)
-def main(db_config_path, stats_config_path, query, metric_name):
+@click.argument("job-name")
+def main(config_file, job_name):
     """
-    Foo? Bar.
+    TODO: Add description.
     """
-    db_config = get_config(db_config_path)
-    stats_config = get_config(stats_config_path)
+    config = yaml.load(config_file)
 
-    db = DataBase(
-        host=db_config["HOST"],
-        port=db_config["PORT"],
-        username=db_config["USERNAME"],
-        password=db_config["PASSWORD"],
-        database=db_config["DATABASE"]
+    job = config["jobs"][job_name]
+
+    db_server = config["db_servers"][job["db_server"]]
+    conn = psycopg2.connect(
+        host=db_server["host"],
+        port=db_server["port"],
+        user=db_server["user"],
+        password=db_server["password"],
+        dbname=job["db_name"]
     )
+
+    stats_server = config["stats_servers"][job["stats_server"]]
     stats = StatsClient(
-        host=stats_config["HOST"],
-        port=stats_config["PORT"],
-        prefix=stats_config.get("PREFIX")
+        host=stats_server["host"],
+        port=stats_server["port"]
     )
 
-    rv = db.aggregate(query.read())
-    stats.gauge(metric_name, rv)
+    with conn, conn.cursor() as cur:
+        cur.execute(job["query"])
+        assert cur.rowcount == 1, "Query must return exactly one row."
+
+        row = cur.fetchone()
+        assert len(row) == 1, "Query must return exactly one column."
+
+    stats.gauge(job["stat"], row[0])
+
+    conn.close()
 
 
 if __name__ == "__main__":
