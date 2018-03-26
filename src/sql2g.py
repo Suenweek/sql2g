@@ -52,7 +52,3 @@ def main(config_file, job_name):
     stats.gauge(job["stat"], row[0])
 
     conn.close()
-
-
-if __name__ == "__main__":
-    main()
