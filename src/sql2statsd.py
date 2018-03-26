@@ -8,7 +8,7 @@ from statsd import StatsClient
 
 
 @click.command(context_settings={
-    "auto_envvar_prefix": "SQL2G",
+    "auto_envvar_prefix": "SQL2STATSD",
     "help_option_names": ["-h", "--help"]
 })
 @click.option(
@@ -20,8 +20,8 @@ from statsd import StatsClient
 @click.argument("job-name")
 def main(config_file, job_name):
     """
-    `sql2g` is a CLI utility that queries SQL database and posts results to
-    Graphite via StatsD based on provided YAML config file and job name.
+    `sql2statsd` is a CLI utility that queries SQL database and posts results
+    to StatsD based on provided YAML config file and job name.
     """
     config = yaml.load(config_file)
 

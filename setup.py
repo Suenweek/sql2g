@@ -13,14 +13,13 @@ def read(filename, encoding="utf-8"):
 
 
 setup(
-    name="sql2g",
+    name="sql2statsd",
     version="0.0.1",
     author="Suenweek",
     author_email="suenweek@protonmail.com",
-    description="CLI utility that queries SQL database and posts results to "
-                "Graphite via StatsD.",
+    description="CLI utility that queries SQL database and posts results to StatsD.",
     license="MIT",
-    url="https://github.com/Suenweek/sql2g",
+    url="https://github.com/Suenweek/sql2statsd",
     install_requires=[
         "click",
         "psycopg2",
@@ -28,11 +27,11 @@ setup(
         "statsd"
     ],
     package_dir={"": "src"},
-    py_modules=["sql2g"],
+    py_modules=["sql2statsd"],
     long_description=read("README.md"),
     entry_points={
         "console_scripts": [
-            "sql2g=sql2g:main"
+            "sql2statsd=sql2statsd:main"
         ]
     }
 )
