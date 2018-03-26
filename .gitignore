@@ -107,3 +107,6 @@ venv.bak/
 
 # PyCharm
 .idea/
+
+# Actual config
+config.yaml
