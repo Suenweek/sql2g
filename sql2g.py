@@ -14,7 +14,8 @@ from statsd import StatsClient
 @click.argument("job-name")
 def main(config_file, job_name):
     """
-    TODO: Add description.
+    `sql2g` is a CLI utility that queries SQL database and posts results to
+    Graphite via StatsD based on provided YAML config file and job name.
     """
     config = yaml.load(config_file)
 
@@ -48,4 +49,4 @@ def main(config_file, job_name):
 
 
 if __name__ == "__main__":
-    main()
+    main(auto_envvar_prefix="SQL2G")
