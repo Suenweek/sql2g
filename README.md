@@ -1,10 +1,28 @@
-# `sql2g`
+# sql2g
 
 `sql2g` is a CLI utility that queries SQL database and posts results to
-Graphite via StatsD based on a provided YAML config file and a job name.
+[Graphite](https://graphiteapp.org/)
+via
+[StatsD](https://github.com/etsy/statsd)
+based on a provided YAML config file and a job name.
 
 
-## Usage:
+## Installation
+
+`virtualenv` recommended.
+
+- From PyPI:
+    ```
+    pip install sql2g
+    ```
+
+- From Github:
+    ```
+    pip install -e git+https://github.com/Suenweek/sql2g#egg=sql2g
+    ```
+
+
+## Usage
 `sql2g` is intended to be run as a scheduled task (e.g. a `cron` job).
 
 1. Create a YAML config file based on a config schema provided below.
@@ -12,12 +30,11 @@ Graphite via StatsD based on a provided YAML config file and a job name.
     - `<CONFIG_FILE>` is a path to your config.
     - `<JOB_NAME>` is a key in a `config["jobs"]` section.
 
-_Hint:_
 Passing config file path as a parameter each time is tedious, so you may want
 to specify `SQL2G_CONFIG_FILE` env var instead.
 
 
-## Config schema:
+## Config schema
 
 ```yaml
 db_servers:
