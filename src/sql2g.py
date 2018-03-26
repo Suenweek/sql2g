@@ -1,10 +1,16 @@
+__version__ = "0.0.1"
+
+
 import yaml
 import click
 import psycopg2
 from statsd import StatsClient
 
 
-@click.command()
+@click.command(context_settings={
+    "auto_envvar_prefix": "SQL2G",
+    "help_option_names": ["-h", "--help"]
+})
 @click.option(
     "--config-file",
     type=click.File(),
@@ -49,4 +55,4 @@ def main(config_file, job_name):
 
 
 if __name__ == "__main__":
-    main(auto_envvar_prefix="SQL2G")
+    main()
