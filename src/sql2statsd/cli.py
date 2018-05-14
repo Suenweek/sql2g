@@ -1,5 +1,5 @@
 __title__ = "sql2statsd"
-__version__ = "1.2.1"
+__version__ = "1.2.2"
 
 
 import os
@@ -49,7 +49,9 @@ def main(db_servers, statsd_servers, job):
     to StatsD based on provided YAML config files.
     """
     ensure_app_dir()
-    log("Executing job: {}...", job)
+
+    log("Started job execution.")
+    log("Job: {}", job)
 
     db_server = db_servers[job["db_server"]]
     conn = psycopg2.connect(
@@ -72,11 +74,12 @@ def main(db_servers, statsd_servers, job):
         assert cur.rowcount == 1, "Query must return exactly one row."
         row = cur.fetchone()
         assert len(row) == 1, "Query must return exactly one column."
+    log("Got result {}.", row[0])
 
-    log("Sending {}...", row[0])
+    log("Sending stats...")
     statsd.gauge(job["stat"], row[0])
 
     log("Closing db connection...")
     conn.close()
 
-    log("Done.")
+    log("Finished job execution.")
