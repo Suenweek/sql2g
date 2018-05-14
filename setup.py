@@ -16,7 +16,7 @@ setup(
     name="sql2statsd",
     version="0.0.1",
     author="Suenweek",
-    author_email="suenweek@protonmail.com",
+    author_email="roman.novatorov@gmail.com",
     description="CLI utility that queries SQL database and posts results to StatsD.",
     license="MIT",
     url="https://github.com/Suenweek/sql2statsd",
