@@ -1,33 +1,26 @@
 __title__ = "sql2statsd"
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 
 
 import os
-import yaml
 import click
 import psycopg2
 from statsd import StatsClient
+from sql2statsd.utils import YamlFile, log
 
 
 APP_DIR = click.get_app_dir(__title__)
 
 
-def log(msg, *args):
-    if args:
-        msg = msg.format(*args)
-    click.echo(msg, err=True)
-
-
-class YamlFile(click.File):
-
-    name = "yaml-file"
-
-    def convert(self, value, param, ctx):
-        f = super(YamlFile, self).convert(value, param, ctx)
-        try:
-            return yaml.load(f)
-        except Exception as e:
-            self.fail(e)
+def ensure_app_dir():
+    try:
+        log("Creating app dir...")
+        os.makedirs(APP_DIR)
+    except OSError as e:
+        if e.errno == os.errno.EEXIST:
+            log("{} already exists.", APP_DIR)
+        else:
+            raise
 
 
 @click.command(context_settings={
@@ -55,26 +48,10 @@ def main(db_servers, statsd_servers, job):
     `sql2statsd` is a CLI utility that queries SQL database and posts results
     to StatsD based on provided YAML config files.
     """
-    try:
-        log("Creating {}...", APP_DIR)
-        os.makedirs(APP_DIR)
-    except OSError as e:
-        if e.errno == os.errno.EEXIST:
-            log("{} already exists.", APP_DIR)
-        else:
-            raise
-
-    log("Job: {}", job)
+    ensure_app_dir()
+    log("Executing job: {}...", job)
 
     db_server = db_servers[job["db_server"]]
-    log(
-        "Db server: {}:{}@{}:{}/{}",
-        db_server["user"],
-        "*" * 8,
-        db_server["host"],
-        db_server["port"],
-        db_server["db_name"]
-    )
     conn = psycopg2.connect(
         host=db_server["host"],
         port=db_server["port"],
@@ -84,11 +61,6 @@ def main(db_servers, statsd_servers, job):
     )
 
     statsd_server = statsd_servers[job["statsd_server"]]
-    log(
-        "Statsd server: {}:{}",
-        statsd_server["host"],
-        statsd_server["port"]
-    )
     statsd = StatsClient(
         host=statsd_server["host"],
         port=statsd_server["port"]
@@ -98,12 +70,10 @@ def main(db_servers, statsd_servers, job):
     with conn, conn.cursor() as cur:
         cur.execute(job["query"])
         assert cur.rowcount == 1, "Query must return exactly one row."
-
         row = cur.fetchone()
         assert len(row) == 1, "Query must return exactly one column."
-    log("Result: {}", row[0])
 
-    log("Sending stats...")
+    log("Sending {}...", row[0])
     statsd.gauge(job["stat"], row[0])
 
     log("Closing db connection...")

@@ -1,5 +1,5 @@
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
 from codecs import open
 
 
@@ -14,7 +14,7 @@ def read(filename, encoding="utf-8"):
 
 setup(
     name="sql2statsd",
-    version="1.2.0",
+    version="1.2.1",
     author="Suenweek",
     author_email="roman.novatorov@gmail.com",
     description="CLI utility that queries SQL database and posts results to StatsD.",
@@ -27,11 +27,11 @@ setup(
         "statsd"
     ],
     package_dir={"": "src"},
-    py_modules=["sql2statsd"],
+    packages=find_packages("src"),
     long_description=read("README.md"),
     entry_points={
         "console_scripts": [
-            "sql2statsd=sql2statsd:main"
+            "sql2statsd=sql2statsd.cli:main"
         ]
     }
 )
