@@ -1,0 +1,8 @@
+db_server: my_db_server
+db_name: my_db
+statsd_server: my_statsd_server
+stat: users.active
+query: >
+  SELECT COUNT(*)
+  FROM user
+  WHERE user.is_active

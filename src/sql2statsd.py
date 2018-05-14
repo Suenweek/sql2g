@@ -1,10 +1,27 @@
-__version__ = "0.0.1"
+__title__ = "sql2statsd"
+__version__ = "1.0.0"
 
 
+import os
 import yaml
 import click
 import psycopg2
 from statsd import StatsClient
+
+
+APP_DIR = click.get_app_dir(__title__)
+
+
+class YamlFile(click.File):
+
+    name = "yaml-file"
+
+    def convert(self, value, param, ctx):
+        f = super(YamlFile, self).convert(value, param, ctx)
+        try:
+            return yaml.load(f)
+        except Exception as e:
+            self.fail(e)
 
 
 @click.command(context_settings={
@@ -12,22 +29,27 @@ from statsd import StatsClient
     "help_option_names": ["-h", "--help"]
 })
 @click.option(
-    "--config-file",
-    type=click.File(),
-    default="config.yaml",
+    "--db-servers",
+    type=YamlFile(),
+    default=os.path.join(APP_DIR, "db-servers.yaml"),
     show_default=True
 )
-@click.argument("job-name")
-def main(config_file, job_name):
+@click.option(
+    "--statsd-servers",
+    type=YamlFile(),
+    default=os.path.join(APP_DIR, "statsd-servers.yaml"),
+    show_default=True
+)
+@click.argument(
+    "job",
+    type=YamlFile()
+)
+def main(db_servers, statsd_servers, job):
     """
     `sql2statsd` is a CLI utility that queries SQL database and posts results
-    to StatsD based on provided YAML config file and job name.
+    to StatsD based on provided YAML config files.
     """
-    config = yaml.load(config_file)
-
-    job = config["jobs"][job_name]
-
-    db_server = config["db_servers"][job["db_server"]]
+    db_server = db_servers[job["db_server"]]
     conn = psycopg2.connect(
         host=db_server["host"],
         port=db_server["port"],
@@ -36,10 +58,10 @@ def main(config_file, job_name):
         dbname=job["db_name"]
     )
 
-    stats_server = config["stats_servers"][job["stats_server"]]
-    stats = StatsClient(
-        host=stats_server["host"],
-        port=stats_server["port"]
+    statsd_server = statsd_servers[job["statsd_server"]]
+    statsd = StatsClient(
+        host=statsd_server["host"],
+        port=statsd_server["port"]
     )
 
     with conn, conn.cursor() as cur:
@@ -49,6 +71,6 @@ def main(config_file, job_name):
         row = cur.fetchone()
         assert len(row) == 1, "Query must return exactly one column."
 
-    stats.gauge(job["stat"], row[0])
+    statsd.gauge(job["stat"], row[0])
 
     conn.close()
