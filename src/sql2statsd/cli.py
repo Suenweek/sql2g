@@ -1,5 +1,5 @@
 __title__ = "sql2statsd"
-__version__ = "1.2.2"
+__version__ = "1.2.3"
 
 
 import os
@@ -13,14 +13,14 @@ APP_DIR = click.get_app_dir(__title__)
 
 
 def ensure_app_dir():
+    log("Ensuring app dir exists...")
     try:
-        log("Creating app dir...")
         os.makedirs(APP_DIR)
     except OSError as e:
-        if e.errno == os.errno.EEXIST:
-            log("{} already exists.", APP_DIR)
-        else:
+        if e.errno != os.errno.EEXIST:
             raise
+    else:
+        log("Created {}.", APP_DIR)
 
 
 @click.command(context_settings={
@@ -74,7 +74,7 @@ def main(db_servers, statsd_servers, job):
         assert cur.rowcount == 1, "Query must return exactly one row."
         row = cur.fetchone()
         assert len(row) == 1, "Query must return exactly one column."
-    log("Got result {}.", row[0])
+    log("Result: {}.", row[0])
 
     log("Sending stats...")
     statsd.gauge(job["stat"], row[0])
