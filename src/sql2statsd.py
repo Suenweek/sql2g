@@ -1,5 +1,5 @@
 __title__ = "sql2statsd"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 
 import os
@@ -10,6 +10,7 @@ from statsd import StatsClient
 
 
 APP_DIR = click.get_app_dir(__title__)
+os.makedirs(APP_DIR, exist_ok=True)
 
 
 class YamlFile(click.File):
