@@ -10,7 +10,12 @@ from statsd import StatsClient
 
 
 APP_DIR = click.get_app_dir(__title__)
-os.makedirs(APP_DIR, exist_ok=True)
+
+try:
+    os.makedirs(APP_DIR)
+except OSError as e:
+    if e.errno != os.errno.EEXIST:
+        raise
 
 
 class YamlFile(click.File):
