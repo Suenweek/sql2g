@@ -1,5 +1,5 @@
 __title__ = "sql2statsd"
-__version__ = "1.2.3"
+__version__ = "1.2.4"
 
 
 import os
