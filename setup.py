@@ -14,7 +14,7 @@ def read(filename, encoding="utf-8"):
 
 setup(
     name="sql2statsd",
-    version="1.2.4",
+    version="1.2.5",
     author="Suenweek",
     author_email="roman.novatorov@gmail.com",
     description="CLI utility that queries SQL database and posts results to StatsD.",

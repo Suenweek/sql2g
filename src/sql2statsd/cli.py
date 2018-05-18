@@ -1,5 +1,5 @@
 __title__ = "sql2statsd"
-__version__ = "1.2.4"
+__version__ = "1.2.5"
 
 
 import os
@@ -24,7 +24,7 @@ def ensure_app_dir():
 
 
 @click.command(context_settings={
-    "auto_envvar_prefix": "SQL2STATSD",
+    "auto_envvar_prefix": __title__.upper(),
     "help_option_names": ["-h", "--help"]
 })
 @click.option(
